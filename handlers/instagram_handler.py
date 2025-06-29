@@ -1,14 +1,15 @@
-from aiogram import Router, types
-from services.instagram import download_instagram_content
+from aiogram import Router, types, F
+from services.instagram import download_instagram_video
 
 instagram_router = Router()
 
-@instagram_router.message()
-async def handle_instagram(message: types.Message):
-    if "instagram.com" in message.text:
-        try:
-            video_url = await download_instagram_content(message.text)
-            await message.answer_video(video_url)
-        except Exception as e:
-            print("❌ Instagram xatosi:", str(e))
-            await message.answer(f"Instagram videoni yuklab bo‘lmadi.\nXato: {str(e)}")
+@instagram_router.message(F.text.lower().contains("instagram.com"))
+async def handle_instagram_link(message: types.Message):
+    url = message.text.strip()
+    await message.reply("⏳ Yuklab olinmoqda...")
+
+    try:
+        video_url = await download_instagram_video(url)
+        await message.reply_video(video_url, caption="✅ Instagram videosi!")
+    except Exception as e:
+        await message.reply(f"❌ Instagram xatosi: {e}")
